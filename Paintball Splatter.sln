@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Paintball Splatter", "Paintball Splatter\Paintball Splatter.vcxproj", "{CBE34C2D-B7C7-0D83-2028-08D60C2BF804}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CBE34C2D-B7C7-0D83-2028-08D60C2BF804}.Debug|x64.ActiveCfg = Debug|x64
+		{CBE34C2D-B7C7-0D83-2028-08D60C2BF804}.Debug|x64.Build.0 = Debug|x64
+		{CBE34C2D-B7C7-0D83-2028-08D60C2BF804}.Release|x64.ActiveCfg = Release|x64
+		{CBE34C2D-B7C7-0D83-2028-08D60C2BF804}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
