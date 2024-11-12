@@ -2,10 +2,17 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>D:\Paintball Splatter\Paintball Splatter\bin\Debug-windows-x86_64\Paintball Splatter\Paintball Splatter.exe</FullPath>
+      <FullPath>E:\Learning Graphics\Paintball Splatter (DX11)\bin\Debug-windows-x86_64\Paintball Splatter\Paintball Splatter.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
-  <ContentFiles />
+  <ContentFiles>
+    <ContentFile>
+      <FullPath>E:\Learning Graphics\Paintball Splatter (DX11)\Paintball Splatter\PixelShader.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>E:\Learning Graphics\Paintball Splatter (DX11)\Paintball Splatter\VertexShader.cso</FullPath>
+    </ContentFile>
+  </ContentFiles>
   <SatelliteDlls />
   <NonRecipeFileRefs />
 </Project>

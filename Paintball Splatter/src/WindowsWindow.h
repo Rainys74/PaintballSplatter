@@ -20,6 +20,9 @@ namespace Engine
 		void SwapBuffers() override;
 		void Terminate() override;
 		void TerminateOpenGLContext() override;
+
+		// Win32
+		void* Win32TryGetHWND() override;
 	private:
 		int m_WindowShouldClose;
 		int m_Width, m_Height;

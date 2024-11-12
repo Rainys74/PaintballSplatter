@@ -24,6 +24,9 @@ namespace Engine
 		virtual void SwapBuffers() = 0;
 		virtual void Terminate() = 0;
 		virtual void TerminateOpenGLContext() = 0;
+
+		// Win32
+		virtual void* Win32TryGetHWND() = 0;
 	private:
 		int m_WindowShouldClose;
 		int m_Width, m_Height;

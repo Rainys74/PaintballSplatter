@@ -225,4 +225,8 @@ namespace Engine
 		ReleaseDC(m_HWnd, m_DC);
 		wglDeleteContext(m_RC);
 	}
+	void* WindowsWindow::Win32TryGetHWND()
+	{
+		return (void*)m_HWnd;
+	}
 }

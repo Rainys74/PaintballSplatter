@@ -16,31 +16,31 @@ int main(int argc, char* argv[])
 	Engine::Window* window = Engine::Window::GenerateWindow();
 
 	window->Create(640, 480, "Paintball Splatter");
-	window->CreateOpenGLContext();
+	//window->CreateOpenGLContext();
 
-	//if (glewInit() != GLEW_OK) std::cout << "GLEW Error!" << std::endl;
-	PS_ASSERT(glewInit() == GLEW_OK, "GLEW Error!");
+	///if (glewInit() != GLEW_OK) std::cout << "GLEW Error!" << std::endl;
+	//PS_ASSERT(glewInit() == GLEW_OK, "GLEW Error!");
 
 	OpenGLAttribs* attributes = new OpenGLAttribs();
 	attributes->SetWindowHint(WINDOW_OPENGL_PROFILE, WINDOW_OPENGL_V_CORE_PROFILE);
 	attributes->SetWindowHint(WINDOW_OPENGL_VERSION_MAJOR, 3);
 	attributes->SetWindowHint(WINDOW_OPENGL_VERSION_MINOR, 3);
 
-	window->CreateOpenGLExtensions(nullptr);
+	//window->CreateOpenGLExtensions(nullptr);
 
 	//delete attributes;
 
-	//PS_LOGGER_INFO(glGetString(GL_VERSION));
-	PS_LOGGER_INFO("Vendor: "		<< glGetString(GL_VENDOR));
-	PS_LOGGER_INFO("Renderer: "		<< glGetString(GL_RENDERER));
-	PS_LOGGER_INFO("Version: "		<< glGetString(GL_VERSION));
-	PS_LOGGER_INFO("GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION));
-	PS_LOGGER_INFO("Profile: "		<< (attributes->GetWindowHint(WINDOW_OPENGL_PROFILE) == 1 ? "WINDOW_OPENGL_V_CORE_PROFILE" : attributes->GetWindowHint(WINDOW_OPENGL_PROFILE) == 2 ? "WINDOW_OPENGL_V_COMPATIBILITY_PROFILE" : "Unknown"));
-	//PS_LOGGER_INFO("Extensions: "	<< glGetString(GL_EXTENSIONS));
+	////PS_LOGGER_INFO(glGetString(GL_VERSION));
+	//PS_LOGGER_INFO("Vendor: "		<< glGetString(GL_VENDOR));
+	//PS_LOGGER_INFO("Renderer: "		<< glGetString(GL_RENDERER));
+	//PS_LOGGER_INFO("Version: "		<< glGetString(GL_VERSION));
+	//PS_LOGGER_INFO("GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION));
+	//PS_LOGGER_INFO("Profile: "		<< (attributes->GetWindowHint(WINDOW_OPENGL_PROFILE) == 1 ? "WINDOW_OPENGL_V_CORE_PROFILE" : attributes->GetWindowHint(WINDOW_OPENGL_PROFILE) == 2 ? "WINDOW_OPENGL_V_COMPATIBILITY_PROFILE" : "Unknown"));
+	////PS_LOGGER_INFO("Extensions: "	<< glGetString(GL_EXTENSIONS));
 
 	delete attributes;
 
-	Renderer::Initialize();
+	Renderer::Initialize(window);
 
 	while (!window->WindowShouldClose())
 	{
@@ -71,15 +71,13 @@ int main(int argc, char* argv[])
 		Renderer::ClearColor(0.3f, 0.2f, 0.8f, 1.0f);
 		Renderer::Clear();
 
-		/*VertexBuffer vbo(positions, sizeof(positions), GL_DYNAMIC_DRAW);
+		//VertexBuffer vbo(positions, sizeof(positions), GFX_DYNAMIC_DRAW);
+		//vbo.PushLayout<float>(0, 3, 3 * sizeof(float), 0);
+		//vbo.FinalizeLayout();
+		//
+		//IndexBuffer ibo(indices, std::size(indices) /*3*/);
 
-		vbo.LayoutPush<float>(0, 3, 3 * sizeof(float), 0);
-		vbo.FinalizeLayout();
-
-		IndexBuffer ibo(indices, 3);
-		ibo.Bind();*/
-
-		VertexBuffer vbo1(GL_DYNAMIC_DRAW);
+		VertexBuffer vbo1(GFX_DYNAMIC_DRAW);
 
 		Vertex v0(-1.0f, -1.0f, -0.5f);
 		Vertex v1(-0.5f, 0.0f, -0.5f);
@@ -92,7 +90,7 @@ int main(int argc, char* argv[])
 		vbo1.PushLayout<float>(0, 3, 3 * sizeof(float), 0);
 		vbo1.FinalizeLayout();
 
-		VertexBuffer vbo2(GL_DYNAMIC_DRAW);
+		VertexBuffer vbo2(GFX_DYNAMIC_DRAW);
 		Vertex v3(0.0f, 0.0f, 0.5f);
 		Vertex v4(0.5f, 1.0f, 0.5f);
 		Vertex v5(1.0f, 0.0f, 0.5f);
@@ -107,23 +105,109 @@ int main(int argc, char* argv[])
 		IndexBuffer ibo1(indices, 3);
 		IndexBuffer ibo2(indices, 3);
 
-		std::string vs = "#version 330 core\n layout (location = 0) in vec4 position;\n uniform mat4 u_MVP;\n		void main()\n {\n 	gl_Position = u_MVP * position;\n				};\n";
-		std::string fs = "#version 330 core\n layout (location = 0) out vec4 color;\n								void main()\n {\n 	color = vec4(1.0, 0.0, 0.0, 1.0);\n				};\n";
-		Shader shader(vs, fs);
-		shader.Bind();
+
+		// Create Fragment Shader
+		WRL::ComPtr<ID3D11PixelShader> pixelShader;
+		WRL::ComPtr<ID3DBlob> blob;
+		HRESULT hr;
+		DXCallHR(D3DReadFileToBlob(L"PixelShader.cso", &blob));
+		DXCallHR(Renderer::GetDevice()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &pixelShader));
+
+		// Bind Fragment Shader
+		Renderer::GetDeviceContext()->PSSetShader(pixelShader.Get(), 0, 0);
+
+		// Create Vertex Shader
+		WRL::ComPtr<ID3D11VertexShader> vertexShader;
+		DXCallHR(D3DReadFileToBlob(L"VertexShader.cso", &blob));
+		DXCallHR(Renderer::GetDevice()->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &vertexShader));
+
+		// Bind Vertex Shader
+		Renderer::GetDeviceContext()->VSSetShader(vertexShader.Get(), 0, 0);
+
+		// Bind render target
+		Renderer::GetDeviceContext()->OMSetRenderTargets(1, Renderer::GetRenderTarget().GetAddressOf(), nullptr);
+
+		// Set primitive topology to triangle list (groups of 3 vertices)
+		Renderer::GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		// input (vertex) layout
+		WRL::ComPtr<ID3D11InputLayout> inputLayout;
+		// TODO: this is hardcoded af
+		D3D11_INPUT_ELEMENT_DESC ied = {};
+		ied.SemanticName = "Position";
+		ied.SemanticIndex = 0;
+		ied.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		ied.InputSlot = 0; // not important
+		ied.AlignedByteOffset = 0;
+		// Instancing stuff (not important)
+		ied.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+		ied.InstanceDataStepRate = 0;
+
+		Renderer::GetDevice()->CreateInputLayout(&ied, 1, blob->GetBufferPointer(), blob->GetBufferSize(), &inputLayout);
+
+		// Bind Vertex Layout
+		Renderer::GetDeviceContext()->IASetInputLayout(inputLayout.Get());
 		
+		//Renderer::GetDeviceContext()->DrawIndexed(ibo.GetCount(), 0, 0);
+
 		Math::Matrix4x4 model = glm::translate(Math::Matrix4x4(1.0f), Math::Vector3(0.0f, 0.0f, 0.0f));
 
-		Renderer::Render(vbo1, ibo1, shader, model);
-		Renderer::Render(vbo2, ibo2, shader, model);
+		Renderer::RenderTestDX11(vbo1, ibo1, model);
+		Renderer::RenderTestDX11(vbo2, ibo2, model);
 
-		Math::Matrix4x4 proj = Math::Ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
-		Math::Matrix4x4 view = glm::translate(Math::Matrix4x4(1.0f), Math::Vector3(0, 0, 0));
-
-		Renderer::SetProjectionMatrix(Math::Ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f));
-		Renderer::SetViewMatrix(glm::translate(Math::Matrix4x4(1.0f), Math::Vector3(0, 0, 0)));
-
-		Math::Matrix4x4 mvp = proj * view * model;
+		//   /*VertexBuffer vbo(positions, sizeof(positions), GL_DYNAMIC_DRAW);
+		//   
+		//   vbo.LayoutPush<float>(0, 3, 3 * sizeof(float), 0);
+		//   vbo.FinalizeLayout();
+		//   
+		//   IndexBuffer ibo(indices, 3);
+		//   ibo.Bind();*/
+		//   
+		//   VertexBuffer vbo1(GL_DYNAMIC_DRAW);
+		//   
+		//   Vertex v0(-1.0f, -1.0f, -0.5f);
+		//   Vertex v1(-0.5f, 0.0f, -0.5f);
+		//   Vertex v2(0.0f, -1.0f, -0.5f);
+		//   vbo1.PushVertex(v0);
+		//   vbo1.PushVertex(v1);
+		//   vbo1.PushVertex(v2);
+		//   vbo1.FinalizeVertices();
+		//   
+		//   vbo1.PushLayout<float>(0, 3, 3 * sizeof(float), 0);
+		//   vbo1.FinalizeLayout();
+		//   
+		//   VertexBuffer vbo2(GL_DYNAMIC_DRAW);
+		//   Vertex v3(0.0f, 0.0f, 0.5f);
+		//   Vertex v4(0.5f, 1.0f, 0.5f);
+		//   Vertex v5(1.0f, 0.0f, 0.5f);
+		//   vbo2.PushVertex(v3);
+		//   vbo2.PushVertex(v4);
+		//   vbo2.PushVertex(v5);
+		//   vbo2.FinalizeVertices();
+		//   
+		//   vbo2.PushLayout<float>(0, 3, 3 * sizeof(float), 0);
+		//   vbo2.FinalizeLayout();
+		//   
+		//   IndexBuffer ibo1(indices, 3);
+		//   IndexBuffer ibo2(indices, 3);
+		//   
+		//   std::string vs = "#version 330 core\n layout (location = 0) in vec4 position;\n uniform mat4 u_MVP;\n		void main()\n {\n 	gl_Position = u_MVP * position;\n				};\n";
+		//   std::string fs = "#version 330 core\n layout (location = 0) out vec4 color;\n								void main()\n {\n 	color = vec4(1.0, 0.0, 0.0, 1.0);\n				};\n";
+		//   Shader shader(vs, fs);
+		//   shader.Bind();
+		//   
+		//   Math::Matrix4x4 model = glm::translate(Math::Matrix4x4(1.0f), Math::Vector3(0.0f, 0.0f, 0.0f));
+		//   
+		//   Renderer::Render(vbo1, ibo1, shader, model);
+		//   Renderer::Render(vbo2, ibo2, shader, model);
+		//   
+		//   Math::Matrix4x4 proj = Math::Ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
+		//   Math::Matrix4x4 view = glm::translate(Math::Matrix4x4(1.0f), Math::Vector3(0, 0, 0));
+		//   
+		//   Renderer::SetProjectionMatrix(Math::Ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f));
+		//   Renderer::SetViewMatrix(glm::translate(Math::Matrix4x4(1.0f), Math::Vector3(0, 0, 0)));
+		//   
+		//   Math::Matrix4x4 mvp = proj * view * model;
 
 		if (Input::GetKeyPress(KeyState::KeyDown, PS_KEY_W))
 		{
@@ -142,10 +226,22 @@ int main(int argc, char* argv[])
 
 		Input::ClearKeyPresses();
 
-		window->SwapBuffers();
+		//Renderer::GetSwapChain()->Present(1, 0x00000000);
+		if (FAILED(hr = Renderer::GetSwapChain()->Present(1, 0x00000000)))
+		{
+			if (hr == DXGI_ERROR_DEVICE_REMOVED)
+			{
+				hr = Renderer::GetDevice()->GetDeviceRemovedReason();
+			}
+			else
+			{
+				hr = hr;
+			}
+		}
+		//window->SwapBuffers();
 	}
 
-	window->TerminateOpenGLContext();
+	//window->TerminateOpenGLContext();
 	window->Terminate();
 
 	return 0;
