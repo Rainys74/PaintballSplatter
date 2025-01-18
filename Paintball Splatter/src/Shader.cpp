@@ -8,6 +8,7 @@
 
 #include "Buffer.h"
 
+#if 0
 Shader::Shader(std::string& shaderPath)
 	: m_RendererID(0)
 {
@@ -149,3 +150,6 @@ unsigned int Shader::CreateShader(const std::string& vertexShader, const std::st
 
 	return program;
 }
+#else
+
+#endif

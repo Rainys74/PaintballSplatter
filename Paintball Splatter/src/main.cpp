@@ -71,6 +71,9 @@ int main(int argc, char* argv[])
 		Renderer::ClearColor(0.3f, 0.2f, 0.8f, 1.0f);
 		Renderer::Clear();
 
+		Renderer::SetProjectionMatrix(Math::Ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f));
+		Renderer::SetViewMatrix(glm::translate(Math::Matrix4x4(1.0f), Math::Vector3(0, 0, 0)));
+
 		//VertexBuffer vbo(positions, sizeof(positions), GFX_DYNAMIC_DRAW);
 		//vbo.PushLayout<float>(0, 3, 3 * sizeof(float), 0);
 		//vbo.FinalizeLayout();
@@ -147,6 +150,33 @@ int main(int argc, char* argv[])
 
 		// Bind Vertex Layout
 		Renderer::GetDeviceContext()->IASetInputLayout(inputLayout.Get());
+
+		// Create constant buffer for transformation matrix
+		struct ConstantBuffer
+		{
+			Math::Matrix4x4 transform; // column major matrix for dx11 gpu and opengl
+		};
+
+		const ConstantBuffer cb = {};
+
+		Math::Matrix4x4 mvp = Renderer::GetProjectionMatrix() * Renderer::GetViewMatrix() * glm::translate(Math::Matrix4x4(1.0f), Math::Vector3(0.0f, 0.0f, 0.0f));
+		//mvp = glm::transpose(mvp);
+		static_cast<glm::mat4>(cb.transform) = static_cast<glm::mat4>(mvp);
+
+		WRL::ComPtr<ID3D11Buffer> constantBuffer;
+		D3D11_BUFFER_DESC cbd;
+		cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		cbd.Usage = D3D11_USAGE_DYNAMIC;
+		cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		cbd.MiscFlags = 0u;
+		cbd.ByteWidth = sizeof(cb);
+		cbd.StructureByteStride = 0u;
+		D3D11_SUBRESOURCE_DATA csd = {};
+		csd.pSysMem = &cb;
+		DXCallHR(Renderer::GetDevice()->CreateBuffer(&cbd, &csd, &constantBuffer));
+
+		// bind constant buffer to vertex shader
+		Renderer::GetDeviceContext()->VSSetConstantBuffers(0u, 1u, constantBuffer.GetAddressOf());
 		
 		//Renderer::GetDeviceContext()->DrawIndexed(ibo.GetCount(), 0, 0);
 

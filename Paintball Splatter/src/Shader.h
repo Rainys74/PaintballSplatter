@@ -46,23 +46,18 @@ class Shader
 {
 public:
 	Shader(std::string& shaderPath);
-	Shader(std::string& vertexShader, std::string& fragmentShader);
+	//Shader(std::string& vertexShader, std::string& fragmentShader);
 	~Shader();
 
-	int GetUniformLocation(const std::string& name);
+	//int GetUniformLocation(const std::string& name);
 
 	void Bind() const;
 	static void Unbind();
 	void Delete();
-
-	//static std::string& GetVertexShader(std::string& shaderPath);
-	//static std::string& GetFragmentShader(std::string& shaderPath);
-	static ShaderProgram GetParsedShader(std::string& shaderPath);
 private:
-	unsigned int CompileShader(unsigned int type, const std::string& source);
-	unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader);
+	WRL::ComPtr<ID3DBlob> CompileShader(unsigned int type, const std::string& source);
+	WRL::ComPtr<ID3D11VertexShader> CreateShader(const std::string& vertexShader, const std::string& fragmentShader);
 private:
-	unsigned int m_RendererID;
-	std::unordered_map<std::string, int> m_UniformLocationCache; // if const this should be a mutable unordered_map
+	WRL::ComPtr<ID3D11VertexShader> m_RendererID;
 };
 #endif

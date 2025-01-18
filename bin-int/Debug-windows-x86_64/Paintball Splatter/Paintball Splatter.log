@@ -1,6 +1,2 @@
-﻿  Renderer.cpp
-E:\Learning Graphics\Paintball Splatter (DX11)\Paintball Splatter\src\Renderer.cpp(183,13): warning C4244: '=': conversion from 'int' to 'FLOAT', possible loss of data
-E:\Learning Graphics\Paintball Splatter (DX11)\Paintball Splatter\src\Renderer.cpp(184,14): warning C4244: '=': conversion from 'int' to 'FLOAT', possible loss of data
-E:\Learning Graphics\Paintball Splatter (DX11)\Paintball Splatter\src\Renderer.cpp(187,16): warning C4244: '=': conversion from 'int' to 'FLOAT', possible loss of data
-E:\Learning Graphics\Paintball Splatter (DX11)\Paintball Splatter\src\Renderer.cpp(188,16): warning C4244: '=': conversion from 'int' to 'FLOAT', possible loss of data
+﻿  compilation object save succeeded; see E:\Learning Graphics\Paintball Splatter (DX11)\Paintball Splatter\VertexShader.cso
   Paintball Splatter.vcxproj -> E:\Learning Graphics\Paintball Splatter (DX11)\bin\Debug-windows-x86_64\Paintball Splatter\Paintball Splatter.exe
